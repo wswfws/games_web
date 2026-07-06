@@ -6,14 +6,25 @@ const BUILDING_ICONS: Record<string, string> = {
   conveyor: "▶️",
 };
 
+const DIRECTION_ARROWS: Record<string, string> = {
+  up: "⬆️",
+  down: "⬇️",
+  left: "⬅️",
+  right: "➡️",
+};
+
 export function GameBoard({
   game,
   onCellClick,
-  onCellContextMenu,
+  onCellRightClick,
+  onCellRotate,
+  onCellHover,
 }: {
   game: GameState;
   onCellClick: (x: number, y: number) => void;
-  onCellContextMenu: (x: number, y: number) => void;
+  onCellRightClick: (x: number, y: number) => void;
+  onCellRotate: (x: number, y: number) => void;
+  onCellHover: (coords: [number, number] | null) => void;
 }) {
   return (
     <div
@@ -42,18 +53,22 @@ export function GameBoard({
               onClick={() => onCellClick(x, y)}
               onContextMenu={(event) => {
                 event.preventDefault();
-                onCellContextMenu(x, y);
+                onCellRightClick(x, y);
               }}
+              onDoubleClick={() => onCellRotate(x, y)}
+              onMouseEnter={() => onCellHover([x, y])}
+              onMouseLeave={() => onCellHover(null)}
               className="relative aspect-square border-2 border-black/40 cursor-pointer hover:border-cyan-400 hover:shadow-lg hover:shadow-cyan-400/50 transition-all flex flex-col items-center justify-center p-1 overflow-hidden group"
               style={{
                 backgroundColor: bgColor,
               }}
-              title={`${x}, ${y} ${cell.building ? BUILDING_DEFS[cell.building.type].label : FLOOR_DEFS[cell.floor].label} (${oreCount} ore, ${woodCount} wood)`}
+              title={`${x}, ${y} ${cell.building ? BUILDING_DEFS[cell.building.type].label : FLOOR_DEFS[cell.floor].label} ${cell.building ? `(${cell.building.direction})` : ""}`}
             >
-              {/* Building Icon */}
+              {/* Building Icon and Direction */}
               {hasBuilding && (
-                <div className="text-2xl mb-1 drop-shadow-lg">
-                  {BUILDING_ICONS[cell.building!.type]}
+                <div className="flex flex-col items-center justify-center mb-1">
+                  <div className="text-lg">{BUILDING_ICONS[cell.building!.type]}</div>
+                  <div className="text-xs">{DIRECTION_ARROWS[cell.building!.direction]}</div>
                 </div>
               )}
 
