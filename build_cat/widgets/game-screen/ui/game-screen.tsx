@@ -5,6 +5,7 @@ import {createInitialGame, rotateBuilding, updateGameTick} from "@/features/game
 import {GameBoard} from "@/widgets/game-board/ui/game-board";
 import {BuildingToolbar} from "@/widgets/building-toolbar/ui/building-toolbar";
 import {getPlayLabel} from "@/widgets/game-screen/ui/play-label";
+import { PlayPauseButton } from "@/widgets/game-screen/ui/play-pause-button";
 import type {BuildingType, GameState} from "@/shared/entities/game";
 
 const BUILDINGS: BuildingType[] = ["drill", "sawmill", "conveyor"];
@@ -105,14 +106,7 @@ export function GameScreen() {
 
       <BuildingToolbar selectedSlot={viewGame.selectedSlot} paused={viewGame.paused} onSelect={onSelect} />
 
-      <button
-        aria-label={getPlayLabel(viewGame.paused)}
-        title={getPlayLabel(viewGame.paused)}
-        onClick={togglePaused}
-        className="fixed bottom-4 right-4 w-12 h-12 flex items-center justify-center rounded-full text-lg bg-slate-800/80 border border-slate-700 text-white shadow-lg hover:scale-105 transition-transform"
-      >
-        <span>{viewGame.paused ? "▶️" : "⏸️"}</span>
-      </button>
+      <PlayPauseButton paused={viewGame.paused} onToggle={togglePaused} />
     </main>
   );
 }
