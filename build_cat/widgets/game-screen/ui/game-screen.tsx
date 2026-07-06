@@ -98,7 +98,7 @@ export function GameScreen() {
         />
       </section>
 
-      <BuildingToolbar selectedSlot={viewGame.selectedSlot} paused={viewGame.paused} />
+      <BuildingToolbar selectedSlot={viewGame.selectedSlot} paused={viewGame.paused} onSelect={onSelect} />
     </main>
   );
 }
