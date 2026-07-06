@@ -26,13 +26,16 @@ export function BuildingToolbar({
               key={building}
               aria-label={`${BUILDING_DEFS[building].label} (${(index + 1) % 10})`}
               title={`${BUILDING_DEFS[building].label} (${(index + 1) % 10})`}
-              className={`w-12 h-12 flex items-center justify-center rounded-full text-xl transition-all ${
+              className={`relative w-12 h-12 flex items-center justify-center rounded-full text-xl transition-all ${
                 isSelected
                   ? "bg-cyan-600 border-2 border-cyan-400 text-white"
                   : "bg-slate-700 border border-slate-600 text-slate-100 hover:bg-slate-600"
               }`}
             >
               <span>{BUILDING_ICONS[building]}</span>
+              <span className="absolute -top-1 -right-1 bg-slate-900 text-[10px] w-5 h-5 rounded-full flex items-center justify-center border border-slate-700 text-white">
+                {(index + 1) % 10}
+              </span>
             </button>
           );
         })}
