@@ -10,9 +10,11 @@ const BUILDING_ICONS: Record<BuildingType, string> = {
 export function BuildingToolbar({
   selectedSlot,
   paused,
+  onSelect,
 }: {
   selectedSlot: number;
   paused: boolean;
+  onSelect?: (index: number) => void;
 }) {
   const buildings = BUILDINGS.slice(0, 10);
 
@@ -26,6 +28,7 @@ export function BuildingToolbar({
               key={building}
               aria-label={`${BUILDING_DEFS[building].label} (${(index + 1) % 10})`}
               title={`${BUILDING_DEFS[building].label} (${(index + 1) % 10})`}
+              onClick={() => onSelect?.(index)}
               className={`relative w-12 h-12 flex items-center justify-center rounded-full text-xl transition-all ${
                 isSelected
                   ? "bg-cyan-600 border-2 border-cyan-400 text-white"
