@@ -23,6 +23,10 @@ export function GameScreen() {
     flush({...gameRef.current, selectedSlot: index});
   }, [flush]);
 
+  const togglePaused = useCallback(() => {
+    flush({...gameRef.current, paused: !gameRef.current.paused});
+  }, [flush]);
+
   const onCellClick = useCallback((x: number, y: number) => {
     const selected = BUILDINGS[gameRef.current.selectedSlot];
     const newGrid = gameRef.current.grid.map(row => [...row]);
@@ -99,6 +103,15 @@ export function GameScreen() {
       </section>
 
       <BuildingToolbar selectedSlot={viewGame.selectedSlot} paused={viewGame.paused} onSelect={onSelect} />
+
+      <button
+        aria-label={viewGame.paused ? "Play (Space)" : "Pause (Space)"}
+        title={viewGame.paused ? "Play (Space)" : "Pause (Space)"}
+        onClick={togglePaused}
+        className="fixed bottom-4 right-4 w-12 h-12 flex items-center justify-center rounded-full text-lg bg-slate-800/80 border border-slate-700 text-white shadow-lg hover:scale-105 transition-transform"
+      >
+        <span>{viewGame.paused ? "▶️" : "⏸️"}</span>
+      </button>
     </main>
   );
 }
