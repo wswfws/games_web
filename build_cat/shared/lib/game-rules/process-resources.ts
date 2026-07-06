@@ -1,5 +1,5 @@
-import type { Cell } from "@/shared/entities/game";
-import { GRID_WIDTH } from "@/shared/entities/game";
+import type { Cell, ResourceType } from "@/shared/entities/game";
+import { GRID_WIDTH, GRID_HEIGHT } from "@/shared/entities/game";
 import type { Direction } from "@/shared/entities/game";
 
 function getNextCoords(x: number, y: number, direction: Direction): [number, number] | null {
@@ -9,7 +9,7 @@ function getNextCoords(x: number, y: number, direction: Direction): [number, num
     case "left":
       return x > 0 ? [x - 1, y] : null;
     case "down":
-      return y + 1 < GRID_WIDTH ? [x, y + 1] : null;
+      return y + 1 < GRID_HEIGHT ? [x, y + 1] : null;
     case "up":
       return y > 0 ? [x, y - 1] : null;
   }
@@ -53,13 +53,13 @@ export function processResources(grid: Cell[][]): Cell[][] {
   const height = workGrid.length;
   const width = workGrid[0]?.length || 0;
 
-  const transfers: (string[])[][] = Array.from({ length: height }, () =>
-    Array.from({ length: width }, () => [] as string[]),
+  const transfers: (ResourceType[])[][] = Array.from({ length: height }, () =>
+    Array.from({ length: width }, () => [] as ResourceType[]),
   );
   const movedSources: boolean[][] = Array.from({ length: height }, () => Array.from({ length: width }, () => false));
 
   // snapshot of resources to base transfer decisions on
-  const snapshot: (string[])[][] = workGrid.map(row => row.map(cell => (cell.building ? [...cell.building.resources] : [])));
+  const snapshot: (ResourceType[])[][] = workGrid.map(row => row.map(cell => (cell.building ? [...cell.building.resources] : [])));
 
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
