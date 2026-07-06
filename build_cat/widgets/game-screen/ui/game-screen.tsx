@@ -4,11 +4,10 @@ import {useCallback, useEffect, useRef, useState} from "react";
 import {createInitialGame, rotateBuilding, updateGameTick} from "@/features/game";
 import {GameBoard} from "@/widgets/game-board/ui/game-board";
 import {BuildingToolbar} from "@/widgets/building-toolbar/ui/building-toolbar";
-import {getPlayLabel} from "@/widgets/game-screen/ui/play-label";
 import { PlayPauseButton } from "@/widgets/game-screen/ui/play-pause-button";
-import type {BuildingType, GameState} from "@/shared/entities/game";
+import type {GameState} from "@/shared/entities/game";
 
-const BUILDINGS: BuildingType[] = ["drill", "sawmill", "conveyor"];
+import { BUILDINGS } from "@/shared/entities/game";
 
 export function GameScreen() {
   const initial = createInitialGame();
@@ -104,7 +103,7 @@ export function GameScreen() {
         />
       </section>
 
-      <BuildingToolbar selectedSlot={viewGame.selectedSlot} paused={viewGame.paused} onSelect={onSelect} />
+      <BuildingToolbar selectedSlot={viewGame.selectedSlot} onSelect={onSelect} />
 
       <PlayPauseButton paused={viewGame.paused} onToggle={togglePaused} />
     </main>

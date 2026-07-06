@@ -35,3 +35,6 @@ export const BUILDING_DEFS: Record<BuildingType, { label: string; color: string 
     color: "#2d3748",
   },
 };
+
+// ordered list of building types for UI and shortcuts
+export const BUILDINGS: BuildingType[] = ["drill", "sawmill", "conveyor"];

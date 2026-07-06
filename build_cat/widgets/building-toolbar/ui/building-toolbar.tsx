@@ -1,6 +1,7 @@
 import { BUILDING_DEFS, type BuildingType } from "@/shared/entities/game";
 
-const BUILDINGS: BuildingType[] = ["drill", "sawmill", "conveyor"];
+import { BUILDINGS } from "@/shared/entities/game";
+
 const BUILDING_ICONS: Record<BuildingType, string> = {
   drill: "⛏️",
   sawmill: "🪛",
@@ -9,11 +10,9 @@ const BUILDING_ICONS: Record<BuildingType, string> = {
 
 export function BuildingToolbar({
   selectedSlot,
-  paused,
   onSelect,
 }: {
   selectedSlot: number;
-  paused: boolean;
   onSelect?: (index: number) => void;
 }) {
   const buildings = BUILDINGS.slice(0, 10);
