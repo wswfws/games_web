@@ -6,17 +6,21 @@ import {GameBoard} from "@/widgets/game-board/ui/game-board";
 import {BuildingToolbar} from "@/widgets/building-toolbar/ui/building-toolbar";
 import type {BuildingType, GameState} from "@/shared/entities/game";
 
+const BUILDINGS: BuildingType[] = ["drill", "sawmill", "conveyor"];
+
 export function GameScreen() {
   const initial = createInitialGame();
   const gameRef = useRef<GameState>(initial);
   const [viewGame, setViewGame] = useState<GameState>(initial);
   const hoveredCell = useRef<[number, number] | null>(null);
 
-  const onCellClick = useCallback((x: number, y: number) => {
-    const buildings: BuildingType[] = ["drill", "sawmill", "conveyor"];
-    const selected = buildings[gameRef.current.selectedSlot];
+  const flush = useCallback((next?: GameState) => {
+    if (next) gameRef.current = next;
+    setViewGame({...gameRef.current});
+  }, []);
 
-    // mutate game ref and update snapshot for render
+  const onCellClick = useCallback((x: number, y: number) => {
+    const selected = BUILDINGS[gameRef.current.selectedSlot];
     const newGrid = gameRef.current.grid.map(row => [...row]);
     const cell = newGrid[y][x];
 
@@ -30,58 +34,41 @@ export function GameScreen() {
       };
     }
 
-    gameRef.current = {...gameRef.current, grid: newGrid};
-    setViewGame({...gameRef.current});
-  }, []);
+    flush({...gameRef.current, grid: newGrid});
+  }, [flush]);
 
   const onCellRightClick = useCallback((x: number, y: number) => {
-    // mutate game ref and update snapshot for render
     const newGrid = gameRef.current.grid.map(row => [...row]);
     const cell = newGrid[y][x];
-    if (cell.building) {
-      cell.building = undefined;
-    }
-    gameRef.current = {...gameRef.current, grid: newGrid};
-    setViewGame({...gameRef.current});
-  }, []);
+    if (cell.building) cell.building = undefined;
+    flush({...gameRef.current, grid: newGrid});
+  }, [flush]);
 
   const onCellRotate = useCallback((x: number, y: number) => {
-    // mutate game ref and update snapshot for render
     const newGrid = structuredClone(gameRef.current.grid);
     const cell = newGrid[y][x];
-    if (cell.building) {
-      const oldDir = cell.building.direction;
-      const newDir = rotateBuilding(oldDir);
-      cell.building.direction = newDir;
-      console.log(`Rotating from ${oldDir} to ${newDir}`);
-    }
-    gameRef.current = {...gameRef.current, grid: newGrid};
-    setViewGame({...gameRef.current});
-    console.log(`Rotated building at (${x}, ${y})`);
-  }, []);
+    if (cell.building) cell.building.direction = rotateBuilding(cell.building.direction);
+    flush({...gameRef.current, grid: newGrid});
+  }, [flush]);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      gameRef.current = updateGameTick(gameRef.current);
-      setViewGame({...gameRef.current});
-    }, 500);
-    return () => clearInterval(interval);
-  }, []);
+    const id = setInterval(() => flush(updateGameTick(gameRef.current)), 500);
+    return () => clearInterval(id);
+  }, [flush]);
 
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
+    const onKey = (e: KeyboardEvent) => {
       const key = e.key.toLowerCase();
-
       if (key >= "0" && key <= "9") {
         const slot = key === "0" ? 9 : parseInt(key) - 1;
-        gameRef.current = {...gameRef.current, selectedSlot: slot};
-        setViewGame({...gameRef.current});
+        flush({...gameRef.current, selectedSlot: slot});
+        return;
       }
 
       if (key === " ") {
         e.preventDefault();
-        gameRef.current = {...gameRef.current, paused: !gameRef.current.paused};
-        setViewGame({...gameRef.current});
+        flush({...gameRef.current, paused: !gameRef.current.paused});
+        return;
       }
 
       if (key === "r" && hoveredCell.current) {
@@ -91,9 +78,9 @@ export function GameScreen() {
       }
     };
 
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onCellRotate]);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onCellRotate, flush]);
 
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
@@ -106,10 +93,8 @@ export function GameScreen() {
           onCellHover={(cell) => (hoveredCell.current = cell)}
         />
       </section>
-      <BuildingToolbar
-        selectedSlot={viewGame.selectedSlot}
-        paused={viewGame.paused}
-      />
+
+      <BuildingToolbar selectedSlot={viewGame.selectedSlot} paused={viewGame.paused} />
     </main>
   );
 }
