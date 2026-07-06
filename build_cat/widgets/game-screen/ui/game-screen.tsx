@@ -19,6 +19,10 @@ export function GameScreen() {
     setViewGame({...gameRef.current});
   }, []);
 
+  const onSelect = useCallback((index: number) => {
+    flush({...gameRef.current, selectedSlot: index});
+  }, [flush]);
+
   const onCellClick = useCallback((x: number, y: number) => {
     const selected = BUILDINGS[gameRef.current.selectedSlot];
     const newGrid = gameRef.current.grid.map(row => [...row]);
