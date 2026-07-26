@@ -25,8 +25,7 @@ export function GameBoard({
           const baseColor = FLOOR_DEFS[cell.floor].color;
           const hasBuilding = !!cell.building;
           const resources = cell.building?.resources || [];
-          const oreCount = resources.filter(r => r === "ore").length;
-          const woodCount = resources.filter(r => r === "wood").length;
+          const fishCount = resources.filter(r => r === "fish").length;
 
           let bgColor = baseColor;
           if (hasBuilding) {
@@ -55,31 +54,39 @@ export function GameBoard({
               {hasBuilding && (
                 <div className="flex flex-col items-center justify-center mb-1">
                   <div className="text-lg">{BUILDING_DEFS[cell.building!.type].icon}</div>
-                  <div className="text-xs">{DIRECTION_ARROWS[cell.building!.direction]}</div>
+                  {BUILDING_DEFS[cell.building!.type].canExport && (
+                    <div className="text-xs">{DIRECTION_ARROWS[cell.building!.direction]}</div>
+                  )}
+                  {cell.building!.assignedCats > 0 && (
+                    <div className="text-[10px] mt-0.5">
+                      {"🐱".repeat(cell.building!.assignedCats)}
+                    </div>
+                  )}
                 </div>
               )}
 
               {/* Resource Stacks */}
               {resources.length > 0 && (
                 <div className="flex flex-col items-center justify-center w-full flex-1">
-                  {oreCount > 0 && (
+                  {fishCount > 0 && (
                     <div className="flex items-center justify-center gap-0.5 mb-0.5">
-                      <div className="w-2 h-2 bg-yellow-500 rounded-full shadow-md"></div>
-                      <span className="text-xs font-bold text-yellow-200">{oreCount}</span>
-                    </div>
-                  )}
-                  {woodCount > 0 && (
-                    <div className="flex items-center justify-center gap-0.5">
-                      <div className="w-2 h-2 bg-orange-600 rounded-full shadow-md"></div>
-                      <span className="text-xs font-bold text-orange-100">{woodCount}</span>
+                      <span className="text-xs">🐟</span>
+                      <span className="text-xs font-bold text-sky-200">{fishCount}</span>
                     </div>
                   )}
                 </div>
               )}
 
+              {!hasBuilding && cell.floor === "water_fish" && (
+                <span className="absolute top-0.5 right-1 text-[10px] opacity-60">🐟</span>
+              )}
+              {!hasBuilding && cell.floor === "water_dead" && (
+                <span className="absolute top-0.5 right-1 text-[10px] opacity-40">〰️</span>
+              )}
+
               {/* Resource bars */}
               {resources.length > 0 && (
-                <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-yellow-500 via-orange-500 to-red-600 opacity-70"></div>
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-400 to-blue-600 opacity-70"></div>
               )}
             </button>
           );

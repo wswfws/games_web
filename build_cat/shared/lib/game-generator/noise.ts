@@ -15,11 +15,16 @@ export function randomFloor(x: number, y: number, width: number, height: number)
   const centerX = width / 2;
   const centerY = height / 2;
   const distance = Math.abs(x - centerX) + Math.abs(y - centerY);
-  const oreChance = distance < 5 ? 0.22 : 0.12;
+  const n = cellNoise(x, y);
 
-  if (cellNoise(x, y) < oreChance) {
-    return "ore";
+  if (distance < 5) {
+    if (n < 0.18) return "water_fish";
+    if (n < 0.30) return "water_dead";
+    return n < 0.40 ? "grass" : "grass";
   }
+
+  if (n < 0.10) return "water_fish";
+  if (n < 0.20) return "water_dead";
 
   return "grass";
 }

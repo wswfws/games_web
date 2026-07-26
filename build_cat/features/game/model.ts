@@ -1,5 +1,5 @@
 import type { Cell, GameState, Direction } from "@/shared/entities/game";
-import { GRID_WIDTH, GRID_HEIGHT, DIRECTION_ORDER } from "@/shared/entities/game";
+import { GRID_WIDTH, GRID_HEIGHT, DIRECTION_ORDER, INITIAL_TOTAL_CATS, STARVATION_INTERVAL, DEFAULT_DIRECTION, KITCHEN_X, KITCHEN_Y } from "@/shared/entities/game";
 import { randomFloor } from "@/shared/lib/game-generator";
 import { processResources } from "@/shared/lib/game-rules";
 
@@ -10,6 +10,15 @@ export function createInitialGame(): GameState {
     })),
   );
 
+  grid[KITCHEN_Y][KITCHEN_X].floor = "grass";
+  grid[KITCHEN_Y][KITCHEN_X].building = {
+    type: "kitchen",
+    direction: DEFAULT_DIRECTION,
+    resources: [],
+    output: null,
+    assignedCats: 0,
+  };
+
   return {
     width: GRID_WIDTH,
     height: GRID_HEIGHT,
@@ -17,15 +26,49 @@ export function createInitialGame(): GameState {
     tick: 0,
     paused: true,
     selectedSlot: 0,
+    totalCats: INITIAL_TOTAL_CATS,
+    gameOver: false,
   };
 }
 
+function checkStarvation(grid: Cell[][], totalCats: number): boolean {
+  for (const row of grid) {
+    for (const cell of row) {
+      if (cell.building?.type !== "kitchen") continue;
+
+      const fishCount = cell.building.resources.filter(r => r === "fish").length;
+
+      if (fishCount >= totalCats) {
+        let needed = totalCats;
+        cell.building.resources = cell.building.resources.filter(r => {
+          if (needed > 0 && r === "fish") {
+            needed--;
+            return false;
+          }
+          return true;
+        });
+        return false;
+      }
+
+      return true;
+    }
+  }
+
+  return false;
+}
+
 export function updateGameTick(game: GameState): GameState {
-  if (game.paused) return game;
+  if (game.paused || game.gameOver) return game;
+
+  const newGrid = processResources(game.grid);
+
+  if ((game.tick + 1) % STARVATION_INTERVAL === 0 && checkStarvation(newGrid, game.totalCats)) {
+    return { ...game, grid: newGrid, tick: game.tick + 1, gameOver: true, paused: true };
+  }
 
   return {
     ...game,
-    grid: processResources(game.grid),
+    grid: newGrid,
     tick: game.tick + 1,
   };
 }

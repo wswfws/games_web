@@ -21,18 +21,10 @@ function produceResources(workGrid: Cell[][]): void {
       const { building } = cell;
       if (!building || !building.output) continue;
 
-      if (!BUILDING_DEFS[building.type].acceptsResources) {
-        // producer: generate output resource when on matching floor
-        if (cell.floor === building.output) {
-          building.resources.push(building.output);
-        }
-      } else {
-        // converter: transform any non-output resource into output
-        const inputIndex = building.resources.findIndex(r => r !== building.output);
-        if (inputIndex !== -1) {
-          building.resources.splice(inputIndex, 1);
-          building.resources.push(building.output);
-        }
+      const def = BUILDING_DEFS[building.type];
+
+      if (def.requiresFloor && building.assignedCats >= def.catWorkers && cell.floor === def.requiresFloor) {
+        building.resources.push(building.output);
       }
     }
   }
@@ -62,6 +54,7 @@ function planTransfers(workGrid: Cell[][]): TransferPlan {
     for (let x = 0; x < width; x++) {
       const cell = workGrid[y][x];
       if (!cell.building) continue;
+      if (!BUILDING_DEFS[cell.building.type].canExport) continue;
       const items = snapshot[y][x];
       if (items.length === 0) continue;
 
@@ -105,7 +98,7 @@ export function processResources(grid: Cell[][]): Cell[][] {
     row.map(cell => ({
       ...cell,
       building: cell.building
-        ? { ...cell.building, resources: [...cell.building.resources] }
+        ? { ...cell.building, resources: [...cell.building.resources], assignedCats: cell.building.assignedCats ?? 0 }
         : undefined,
     })),
   );

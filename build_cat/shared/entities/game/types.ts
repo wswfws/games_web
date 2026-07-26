@@ -1,6 +1,6 @@
-export type FloorType = "grass" | "ore" | "rock";
-export type ResourceType = "ore" | "wood";
-export type BuildingType = "drill" | "sawmill" | "conveyor";
+export type FloorType = "grass" | "water_fish" | "water_dead" | "rock";
+export type ResourceType = "fish";
+export type BuildingType = "pier" | "path" | "kitchen";
 export type Direction = "up" | "down" | "left" | "right";
 
 export interface FloorDefinition {
@@ -9,11 +9,24 @@ export interface FloorDefinition {
   color: string;
 }
 
+export interface BuildingDef {
+  label: string;
+  color: string;
+  output: ResourceType | null;
+  icon: string;
+  acceptsResources: boolean;
+  canExport: boolean;
+  canRemove: boolean;
+  requiresFloor: FloorType | null;
+  catWorkers: number;
+}
+
 export interface Building {
   type: BuildingType;
   direction: Direction;
   resources: ResourceType[];
   output: ResourceType | null;
+  assignedCats: number;
 }
 
 export interface Cell {
@@ -28,4 +41,6 @@ export interface GameState {
   tick: number;
   paused: boolean;
   selectedSlot: number;
+  totalCats: number;
+  gameOver: boolean;
 }
