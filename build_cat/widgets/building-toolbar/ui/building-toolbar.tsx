@@ -1,12 +1,4 @@
-import { BUILDING_DEFS, type BuildingType } from "@/shared/entities/game";
-
-import { BUILDINGS } from "@/shared/entities/game";
-
-const BUILDING_ICONS: Record<BuildingType, string> = {
-  drill: "⛏️",
-  sawmill: "🪛",
-  conveyor: "▶️",
-};
+import { BUILDING_DEFS, BUILDINGS } from "@/shared/entities/game";
 
 export function BuildingToolbar({
   selectedSlot,
@@ -34,7 +26,7 @@ export function BuildingToolbar({
                   : "bg-slate-700 border border-slate-600 text-slate-100 hover:bg-slate-600"
               }`}
             >
-              <span>{BUILDING_ICONS[building]}</span>
+              <span>{BUILDING_DEFS[building].icon}</span>
               <span className="absolute -top-1 -right-1 bg-slate-900 text-[10px] w-5 h-5 rounded-full flex items-center justify-center border border-slate-700 text-white">
                 {(index + 1) % 10}
               </span>

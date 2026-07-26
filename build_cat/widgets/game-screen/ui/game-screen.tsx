@@ -7,7 +7,7 @@ import {BuildingToolbar} from "@/widgets/building-toolbar/ui/building-toolbar";
 import { PlayPauseButton } from "@/widgets/game-screen/ui/play-pause-button";
 import type {GameState} from "@/shared/entities/game";
 
-import { BUILDINGS } from "@/shared/entities/game";
+import { BUILDINGS, BUILDING_DEFS, DEFAULT_DIRECTION, TICK_INTERVAL_MS } from "@/shared/entities/game";
 
 export function GameScreen() {
   const initial = createInitialGame();
@@ -30,16 +30,15 @@ export function GameScreen() {
 
   const onCellClick = useCallback((x: number, y: number) => {
     const selected = BUILDINGS[gameRef.current.selectedSlot];
-    const newGrid = gameRef.current.grid.map(row => [...row]);
+    const newGrid = structuredClone(gameRef.current.grid);
     const cell = newGrid[y][x];
 
     if (!cell.building) {
       cell.building = {
         type: selected,
-        direction: "right",
+        direction: DEFAULT_DIRECTION,
         resources: [],
-        output: selected === "drill" ? "ore" : selected === "sawmill" ? "wood" : null,
-        productivity: 1,
+        output: BUILDING_DEFS[selected].output,
       };
     }
 
@@ -47,7 +46,7 @@ export function GameScreen() {
   }, [flush]);
 
   const onCellRightClick = useCallback((x: number, y: number) => {
-    const newGrid = gameRef.current.grid.map(row => [...row]);
+    const newGrid = structuredClone(gameRef.current.grid);
     const cell = newGrid[y][x];
     if (cell.building) cell.building = undefined;
     flush({...gameRef.current, grid: newGrid});
@@ -61,7 +60,7 @@ export function GameScreen() {
   }, [flush]);
 
   useEffect(() => {
-    const id = setInterval(() => flush(updateGameTick(gameRef.current)), 500);
+    const id = setInterval(() => flush(updateGameTick(gameRef.current)), TICK_INTERVAL_MS);
     return () => clearInterval(id);
   }, [flush]);
 

@@ -1,5 +1,4 @@
 import type { FloorType } from "@/shared/entities/game";
-import { GRID_WIDTH, GRID_HEIGHT } from "@/shared/entities/game";
 
 function cellNoise(x: number, y: number) {
   const value = Math.sin((x + 1) * 12.9898 + (y + 1) * 78.233) * 43758.5453;

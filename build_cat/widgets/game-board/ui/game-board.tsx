@@ -1,17 +1,4 @@
-import { FLOOR_DEFS, BUILDING_DEFS, type GameState } from "@/shared/entities/game";
-
-const BUILDING_ICONS: Record<string, string> = {
-  drill: "⛏️",
-  sawmill: "🪛",
-  conveyor: "▶️",
-};
-
-const DIRECTION_ARROWS: Record<string, string> = {
-  up: "⬆️",
-  down: "⬇️",
-  left: "⬅️",
-  right: "➡️",
-};
+import { FLOOR_DEFS, BUILDING_DEFS, DIRECTION_ARROWS, type GameState } from "@/shared/entities/game";
 
 export function GameBoard({
   game,
@@ -67,7 +54,7 @@ export function GameBoard({
               {/* Building Icon and Direction */}
               {hasBuilding && (
                 <div className="flex flex-col items-center justify-center mb-1">
-                  <div className="text-lg">{BUILDING_ICONS[cell.building!.type]}</div>
+                  <div className="text-lg">{BUILDING_DEFS[cell.building!.type].icon}</div>
                   <div className="text-xs">{DIRECTION_ARROWS[cell.building!.direction]}</div>
                 </div>
               )}

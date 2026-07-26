@@ -14,7 +14,6 @@ export interface Building {
   direction: Direction;
   resources: ResourceType[];
   output: ResourceType | null;
-  productivity: number;
 }
 
 export interface Cell {
