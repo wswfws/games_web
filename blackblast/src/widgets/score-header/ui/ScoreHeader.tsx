@@ -1,20 +1,17 @@
-import { AiMoveButton } from '@/features/ai-move';
-
 interface Props {
   score: number;
   best: number;
-  aiDisabled: boolean;
-  onAiMove: () => void;
   onRestart: () => void;
+  onMenu: () => void;
 }
 
-/** widgets/score-header: компактная шапка — счёт, рекорд, ИИ, рестарт */
-export function ScoreHeader({ score, best, aiDisabled, onAiMove, onRestart }: Props) {
+/** widgets/score-header: компактная шапка соло-режима */
+export function ScoreHeader({ score, best, onRestart, onMenu }: Props) {
   return (
     <header className="top">
-      <div className="logo" aria-hidden>
-        🧱
-      </div>
+      <button className="icon-btn" onClick={onMenu} title="В меню" aria-label="В меню">
+        ☰
+      </button>
       <div className="score-main">
         <span>SCORE</span>
         <b>{score}</b>
@@ -22,7 +19,6 @@ export function ScoreHeader({ score, best, aiDisabled, onAiMove, onRestart }: Pr
       <div className="best-pill" title="Рекорд">
         🏆 {best}
       </div>
-      <AiMoveButton disabled={aiDisabled} onMove={onAiMove} />
       <button className="icon-btn" onClick={onRestart} title="Новая игра" aria-label="Новая игра">
         ↻
       </button>

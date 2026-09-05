@@ -5,6 +5,8 @@
 export interface AiTuning {
   /** Глубина перебора по умолчанию (свой ход + ответы из остатка лотка) */
   defaultDepth: number;
+  /** Глубина перебора для ходов бота в versus-режиме (там важна скорость) */
+  versusDepth: number;
   /** Очки за каждую сгоревшую клетку при симуляции хода */
   clearCellPoints: number;
   /** Бонус за каждую линию сверх первой при мульти-очистке */
@@ -31,6 +33,7 @@ export interface AiTuning {
 
 export const AI_TUNING: AiTuning = {
   defaultDepth: 4,
+  versusDepth: 2,
   clearCellPoints: 20, // tune: 10 → 40 → 20
   comboPerExtraLine: 25, // tune: 50 → 100 → 50 → 25
   megaComboMinLines: 3,

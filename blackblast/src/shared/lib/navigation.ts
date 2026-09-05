@@ -1,0 +1,1 @@
+export type PageKind = 'menu' | 'solo' | 'versus';

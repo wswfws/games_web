@@ -1,0 +1,1 @@
+export { BotTray } from './ui/BotTray';

@@ -21,6 +21,7 @@ export interface GameSession {
   selectedUid: string | null;
   gameOver: boolean;
   streak: number;
+  lastMove: Set<string>;
   drag: DragState | null;
   flash: Set<string>;
   msgs: FloatMsg[];
@@ -49,6 +50,7 @@ export function useGameSession(): GameSession {
   const [drag, setDrag] = useState<DragState | null>(null);
   const [flash, setFlash] = useState<Set<string>>(new Set());
   const [msgs, setMsgs] = useState<FloatMsg[]>([]);
+  const [lastMove, setLastMove] = useState<Set<string>>(new Set());
   const boardRef = useRef<HTMLDivElement | null>(null);
   const msgId = useRef(0);
 
@@ -103,6 +105,18 @@ export function useGameSession(): GameSession {
       setBoard(next);
       setTray(nextTray);
       setSelectedUid(null);
+      setLastMove(() => {
+        const survivorCells = new Set<string>();
+        for (let pr = 0; pr < piece.shape.cells.length; pr++) {
+          for (let pc = 0; pc < piece.shape.cells[0].length; pc++) {
+            if (!piece.shape.cells[pr][pc]) continue;
+            const rr = row + pr;
+            const cc = col + pc;
+            if (next[rr][cc] !== 0) survivorCells.add(`${rr}:${cc}`);
+          }
+        }
+        return survivorCells;
+      });
       setScore((s) => {
         const ns = s + gained;
         setBest((b) => {
@@ -130,6 +144,7 @@ export function useGameSession(): GameSession {
     setFlash(new Set());
     setMsgs([]);
     setDrag(null);
+    setLastMove(new Set());
   }, []);
 
   const selectPiece = useCallback(
@@ -247,6 +262,7 @@ export function useGameSession(): GameSession {
     selectedUid,
     gameOver,
     streak,
+    lastMove,
     drag,
     flash,
     msgs,

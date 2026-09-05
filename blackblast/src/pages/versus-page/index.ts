@@ -1,0 +1,1 @@
+export { VersusPage } from './ui/VersusPage';

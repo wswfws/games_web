@@ -1,5 +1,8 @@
 export const BOARD_SIZE = 8;
 
+/** Сколько всего фигур ставится в режиме «против бота» (на двоих) */
+export const VERSUS_MAX_PIECES = 100;
+
 export const BEST_KEY = 'blockblast-best';
 
 /** Палитра по индексу цвета клетки (0 — пусто, служебный) */
