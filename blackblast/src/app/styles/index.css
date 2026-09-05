@@ -140,6 +140,15 @@ body {
   transform: scale(0.92) rotate(-40deg);
 }
 
+.icon-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.icon-btn:disabled:active {
+  transform: none;
+}
+
 /* ---------- Board ---------- */
 .board-wrap {
   position: relative;
