@@ -20,6 +20,7 @@ export interface GameSession {
   best: number;
   selectedUid: string | null;
   gameOver: boolean;
+  streak: number;
   drag: DragState | null;
   flash: Set<string>;
   msgs: FloatMsg[];
@@ -245,6 +246,7 @@ export function useGameSession(): GameSession {
     best,
     selectedUid,
     gameOver,
+    streak,
     drag,
     flash,
     msgs,

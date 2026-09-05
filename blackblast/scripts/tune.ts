@@ -23,7 +23,9 @@ const DEFAULT_PARAMS: TunableKey[] = [
   'setupWeight6',
   'setupWeight5',
   'filledCellPenalty',
+  'streakBonus',
   'holePenalty',
+  'perimeterPenalty',
   'deadEndPenalty',
 ];
 

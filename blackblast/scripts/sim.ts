@@ -34,7 +34,7 @@ export function playGame(depth: number, tuning: AiTuning): GameResult {
   for (;;) {
     if (tray.every((p) => p.used)) tray = newTray();
     if (checkGameOver(board, tray)) break;
-    const suggestion = suggestAiMove(board, tray, depth, tuning);
+    const suggestion = suggestAiMove(board, tray, depth, tuning, streak);
     if (!suggestion) break;
     const piece = tray.find((p) => p.uid === suggestion.move.uid);
     if (!piece) break;

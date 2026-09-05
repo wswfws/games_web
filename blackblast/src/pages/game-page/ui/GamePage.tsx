@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { anyFit } from '@/entities/board';
 import { DragPreview } from '@/entities/piece';
-import { suggestAiMove } from '@/features/ai-move';
+import { AI_TUNING, suggestAiMove } from '@/features/ai-move';
 import { useGameSession } from '@/features/game-session';
 import { BoardWidget } from '@/widgets/board';
 import { FloatMessages } from '@/widgets/float-messages';
@@ -23,7 +23,7 @@ export function GamePage() {
   );
 
   const onAiMove = () => {
-    const suggestion = suggestAiMove(s.board, s.tray);
+    const suggestion = suggestAiMove(s.board, s.tray, AI_TUNING.defaultDepth, AI_TUNING, s.streak);
     if (!suggestion) return;
     const piece = s.pieceByUid(suggestion.move.uid);
     if (piece) s.commitPlace(piece, suggestion.move.row, suggestion.move.col);
