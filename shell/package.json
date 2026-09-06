@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node ../scripts/patch-federation.mjs && cd .. && npm run build:remotes && cd shell && tsc && vite build && node ../scripts/copy-remotes.js",
+    "build": "node ../scripts/patch-federation.mjs && node ../scripts/diag.mjs && cd .. && npm run build:remotes && cd shell && tsc && vite build && node ../scripts/copy-remotes.js",
     "preview": "vite preview"
   },
   "devDependencies": {
