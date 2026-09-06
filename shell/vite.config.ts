@@ -10,6 +10,7 @@ const REMOTE_PORTS: Record<string, number> = {
   tictactoe: 4175,
   connect_four: 4176,
   memory: 4177,
+  battleship: 4178,
 }
 
 function remoteEntryUrl(name: string) {
@@ -31,6 +32,7 @@ export default defineConfig({
         tictactoe: remoteEntryUrl('tictactoe'),
         connect_four: remoteEntryUrl('connect_four'),
         memory: remoteEntryUrl('memory'),
+        battleship: remoteEntryUrl('battleship'),
       },
       shared: {
         react: { requiredVersion: '^19' },

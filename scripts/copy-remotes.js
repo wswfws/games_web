@@ -11,6 +11,7 @@ const REMOTES = [
   { name: "tictactoe", source: join(root, "tictactoe", "dist") },
   { name: "connect_four", source: join(root, "connect_four", "dist") },
   { name: "memory", source: join(root, "memory", "dist") },
+  { name: "battleship", source: join(root, "battleship", "dist") },
 ];
 
 const shellDist = join(root, "shell", "dist");

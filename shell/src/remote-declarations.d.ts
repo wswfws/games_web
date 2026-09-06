@@ -22,3 +22,8 @@ declare module 'memory/App' {
   const App: React.ComponentType;
   export default App;
 }
+
+declare module 'battleship/App' {
+  const App: React.ComponentType;
+  export default App;
+}

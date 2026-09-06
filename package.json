@@ -4,25 +4,28 @@
   "type": "module",
   "scripts": {
     "postinstall": "node scripts/patch-federation.mjs",
-    "dev": "npm run build:remotes && npm-run-all --parallel dev:shell preview:blackblast preview:build_cat preview:tictactoe preview:connect_four preview:memory",
+    "dev": "npm run build:remotes && npm-run-all --parallel dev:shell preview:blackblast preview:build_cat preview:tictactoe preview:connect_four preview:memory preview:battleship",
     "dev:shell": "npm run dev -w shell",
     "dev:blackblast": "npm run dev -w blackblast",
     "dev:build_cat": "npm run dev -w build_cat",
     "dev:tictactoe": "npm run dev -w tictactoe",
     "dev:connect_four": "npm run dev -w connect_four",
     "dev:memory": "npm run dev -w memory",
-    "build:remotes": "npm run build:blackblast && npm run build:build_cat && npm run build:tictactoe && npm run build:connect_four && npm run build:memory",
+    "dev:battleship": "npm run dev -w battleship",
+    "build:remotes": "npm run build:blackblast && npm run build:build_cat && npm run build:tictactoe && npm run build:connect_four && npm run build:memory && npm run build:battleship",
     "build:blackblast": "npm run build -w blackblast",
     "build:build_cat": "npm run build -w build_cat",
     "build:tictactoe": "npm run build -w tictactoe",
     "build:connect_four": "npm run build -w connect_four",
     "build:memory": "npm run build -w memory",
+    "build:battleship": "npm run build -w battleship",
     "build:shell": "npm run build -w shell",
     "preview:blackblast": "npm run preview -w blackblast",
     "preview:build_cat": "npm run preview -w build_cat",
     "preview:tictactoe": "npm run preview -w tictactoe",
     "preview:connect_four": "npm run preview -w connect_four",
     "preview:memory": "npm run preview -w memory",
+    "preview:battleship": "npm run preview -w battleship",
     "build": "node -v && node scripts/patch-federation.mjs && npm run build:remotes && npm run build:shell && node scripts/copy-remotes.js"
   },
   "workspaces": [
@@ -31,7 +34,8 @@
     "build_cat",
     "tictactoe",
     "connect_four",
-    "memory"
+    "memory",
+    "battleship"
   ],
   "devDependencies": {
     "npm-run-all": "^4.1.5"

@@ -20,6 +20,7 @@ const BuildCatApp = lazy(() => import('build_cat/App'));
 const TicTacToeApp = lazy(() => import('tictactoe/App'));
 const ConnectFourApp = lazy(() => import('connect_four/App'));
 const MemoryApp = lazy(() => import('memory/App'));
+const BattleshipApp = lazy(() => import('battleship/App'));
 
 export const GAMES: CatalogGame[] = [
   {
@@ -81,5 +82,17 @@ export const GAMES: CatalogGame[] = [
     route: '/games/memory',
     remoteModule: 'memory/App',
     Remote: MemoryApp,
+  },
+  {
+    id: 'battleship',
+    title: 'Морской бой',
+    tagline: 'Стратегия',
+    description:
+      'Расставь флот на поле 10×10 и угадай позиции кораблей бота. Топи корабли первым!',
+    icon: '⚓',
+    accent: '#f59e0b',
+    route: '/games/battleship',
+    remoteModule: 'battleship/App',
+    Remote: BattleshipApp,
   },
 ];
