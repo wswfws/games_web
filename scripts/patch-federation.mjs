@@ -1,8 +1,12 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 
 const files = ['index.mjs', 'index.js'].map((f) =>
-  join(process.cwd(), 'node_modules', '@originjs', 'vite-plugin-federation', 'dist', f),
+  join(root, 'node_modules', '@originjs', 'vite-plugin-federation', 'dist', f),
 )
 
 function patch(content) {
@@ -32,6 +36,13 @@ function patch(content) {
       'const _argStr = _arg0 ? typeof _arg0.value === "string" ? _arg0.value : _arg0.quasis && _arg0.quasis[0] && _arg0.quasis[0].value && _arg0.quasis[0].value.raw : void 0;\n' +
       ws +
       'if (node && node.type === "CallExpression" && typeof _argStr === "string" && (_argStr.indexOf(`${DYNAMIC_LOADING_CSS_PREFIX}`) > -1)) {',
+  )
+
+  // 3b. Repair trees patched by an earlier buggy version of this script that left the marker
+  //     expression unbalanced (`_argStr.indexOf(` + trailing `)) > -1)`). Rewrite it balanced.
+  out = out.replace(
+    /if \(node && node\.type === "CallExpression" && typeof _argStr === "string" && _argStr\.indexOf\(\s*`\$\{DYNAMIC_LOADING_CSS_PREFIX\}`\s*\)\) > -1\) \{/,
+    'if (node && node.type === "CallExpression" && typeof _argStr === "string" && (_argStr.indexOf(`${DYNAMIC_LOADING_CSS_PREFIX}`) > -1)) {',
   )
 
   return out

@@ -1,7 +1,6 @@
 {
-  "framework": "other",
   "buildCommand": "npm run build",
-  "outputDirectory": "shell/dist",
+  "outputDirectory": "dist",
   "installCommand": "npm install --include=dev",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
