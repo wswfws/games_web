@@ -14,6 +14,8 @@ export interface AiSuggestion {
   score: number;
 }
 
+export type AiMode = 'solo' | 'versus';
+
 function allPlacements(board: Board, cells: number[][]): { row: number; col: number }[] {
   const out: { row: number; col: number }[] = [];
   for (let r = 0; r < BOARD_SIZE; r++) {
@@ -52,8 +54,18 @@ function simulate(
   return { board: cleared.board, gain, streakOut: cleared.clearedCells > 0 ? streakIn + 1 : 0 };
 }
 
-/** Вес почти собранной линии — аналог evaluateThreat из примера (3→100, 2→10, 1→1) */
-function lineSetupWeight(filled: number, t: AiTuning = AI_TUNING): number {
+/**
+ * Вес почти собранной линии — аналог evaluateThreat из примера (3→100, 2→10, 1→1).
+ * В соло задел — это будущие очки (бонус). В versus почти собранная линия —
+ * «утечка»: её может добить соперник, поэтому веса идут со знаком минус.
+ */
+function lineWeight(filled: number, t: AiTuning = AI_TUNING, mode: AiMode = 'solo'): number {
+  if (mode === 'versus') {
+    if (filled === 7) return -t.leakWeight7;
+    if (filled === 6) return -t.leakWeight6;
+    if (filled === 5) return -t.leakWeight5;
+    return 0;
+  }
   if (filled === 7) return t.setupWeight7;
   if (filled === 6) return t.setupWeight6;
   if (filled === 5) return t.setupWeight5;
@@ -62,9 +74,9 @@ function lineSetupWeight(filled: number, t: AiTuning = AI_TUNING): number {
 
 /**
  * Эвристика позиции — аналог evaluatePosition из примера:
- * заделы под будущие очистки минус занятость поля и «дыры».
+ * заделы/утечки линий минус занятость поля, «дыры» и рваный периметр.
  */
-export function evaluateBoard(board: Board, t: AiTuning = AI_TUNING): number {
+export function evaluateBoard(board: Board, t: AiTuning = AI_TUNING, mode: AiMode = 'solo'): number {
   let score = 0;
   let filledTotal = 0;
   for (let r = 0; r < BOARD_SIZE; r++) {
@@ -75,14 +87,14 @@ export function evaluateBoard(board: Board, t: AiTuning = AI_TUNING): number {
         filledTotal++;
       }
     }
-    score += lineSetupWeight(rowFilled, t);
+    score += lineWeight(rowFilled, t, mode);
   }
   for (let c = 0; c < BOARD_SIZE; c++) {
     let colFilled = 0;
     for (let r = 0; r < BOARD_SIZE; r++) {
       if (board[r][c] !== 0) colFilled++;
     }
-    score += lineSetupWeight(colFilled, t);
+    score += lineWeight(colFilled, t, mode);
   }
   score -= filledTotal * t.filledCellPenalty;
   // «дыры» — пустые клетки, зажатые со всех сторон: их потом трудно закрыть.
@@ -157,6 +169,82 @@ export function suggestAiMove(
       const sim = simulate(board, piece, p.row, p.col, streak, t);
       const rest = avail.filter((x) => x.uid !== piece.uid);
       const total = sim.gain + searchBest(sim.board, rest, depth - 1, sim.streakOut, t);
+      if (total > bestScore || (total === bestScore && Math.random() > 0.5)) {
+        bestScore = total;
+        bestMove = { uid: piece.uid, row: p.row, col: p.col };
+      }
+    }
+  }
+  return bestMove ? { move: bestMove, score: bestScore } : null;
+}
+
+/**
+ * Versus-режим: минимакс на «своих» бот / соперник. Лотки обоих видны,
+ * поэтому ход бота оценивается вместе с лучшим ответом соперника
+ * (тот максимизирует свой марж — для бота это ухудшение значения узла).
+ * Значение узла — очки бота минус очки соперника; листья — эвристика versus.
+ */
+function versusSearch(
+  board: Board,
+  myPieces: TrayPiece[],
+  oppPieces: TrayPiece[],
+  streak: number,
+  oppStreak: number,
+  depthLeft: number,
+  myTurn: boolean,
+  t: AiTuning,
+): number {
+  if (depthLeft <= 0) return evaluateBoard(board, t, 'versus');
+
+  // соперник играет оптимально против нас (min по нашей марже, gain — с минусом)
+  const pieces = myTurn ? myPieces : oppPieces;
+  const piecesStreak = myTurn ? streak : oppStreak;
+  let found = false;
+  let best = myTurn ? -Infinity : Infinity;
+  for (const piece of pieces) {
+    for (const p of allPlacements(board, piece.shape.cells)) {
+      found = true;
+      const sim = simulate(board, piece, p.row, p.col, piecesStreak, t);
+      const rest = pieces.filter((x) => x.uid !== piece.uid);
+      const child = myTurn
+        ? versusSearch(sim.board, rest, oppPieces, sim.streakOut, oppStreak, depthLeft - 1, false, t)
+        : versusSearch(sim.board, myPieces, rest, streak, sim.streakOut, depthLeft - 1, true, t);
+      const total = myTurn ? sim.gain + child : child - sim.gain * t.oppGainPenalty;
+      if (myTurn) {
+        if (total > best || (total === best && Math.random() > 0.5)) best = total;
+      } else if (total < best) {
+        best = total;
+      }
+    }
+  }
+  if (found) return best;
+  // ходить нечем: своему — тупик, сопернику — пас без последствий
+  return myTurn ? evaluateBoard(board, t, 'versus') - t.deadEndPenalty : evaluateBoard(board, t, 'versus');
+}
+
+/**
+ * Лучший первый ход для versus: свой ход + ответы соперника (минимакс).
+ * Глубина — AI_TUNING.versusDepth (быстрее соло, чтобы партия не тормозила).
+ */
+export function suggestVersusMove(
+  board: Board,
+  myTray: TrayPiece[],
+  oppTray: TrayPiece[],
+  depth = AI_TUNING.versusDepth,
+  t: AiTuning = AI_TUNING,
+  streak = 0,
+  oppStreak = 0,
+): AiSuggestion | null {
+  const avail = myTray.filter((p) => !p.used);
+  const opp = oppTray.filter((p) => !p.used);
+  if (avail.length === 0) return null;
+  let bestMove: AiMove | null = null;
+  let bestScore = -Infinity;
+  for (const piece of avail) {
+    for (const p of allPlacements(board, piece.shape.cells)) {
+      const sim = simulate(board, piece, p.row, p.col, streak, t);
+      const rest = avail.filter((x) => x.uid !== piece.uid);
+      const total = sim.gain + versusSearch(sim.board, rest, opp, sim.streakOut, oppStreak, depth - 1, false, t);
       if (total > bestScore || (total === bestScore && Math.random() > 0.5)) {
         bestScore = total;
         bestMove = { uid: piece.uid, row: p.row, col: p.col };

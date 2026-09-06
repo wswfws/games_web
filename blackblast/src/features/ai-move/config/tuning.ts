@@ -15,10 +15,16 @@ export interface AiTuning {
   megaComboMinLines: number;
   /** Дополнительный бонус за 3+ линий за один ход */
   megaComboBonus: number;
-  /** Вес почти собранных линий — заделы под будущие очистки */
+  /** Вес почти собранных линий — заделы под будущие очистки (соло) */
   setupWeight7: number; // 7 из 8 заполнено — почти горит
   setupWeight6: number; // 6 из 8
   setupWeight5: number; // 5 из 8
+  /** Штраф за почти собранные линии в versus — их может добить соперник */
+  leakWeight7: number;
+  leakWeight6: number;
+  leakWeight5: number;
+  /** Versus: вес очков соперника в оценке узла (ответ соперника «стоит» нам) */
+  oppGainPenalty: number;
   /** Штраф за каждую занятую клетку — держит поле свободным */
   filledCellPenalty: number;
   /** Бонус за единицу стрика при серии очисток (как в игре: streak × N) */
@@ -41,6 +47,10 @@ export const AI_TUNING: AiTuning = {
   setupWeight7: 50,
   setupWeight6: 10,
   setupWeight5: 3,
+  leakWeight7: 40,
+  leakWeight6: 12,
+  leakWeight5: 4,
+  oppGainPenalty: 1.0,
   filledCellPenalty: 1.2,
   streakBonus: 20,
   holePenalty: 8,

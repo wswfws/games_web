@@ -1,0 +1,14 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+dist-ssr/
+
+# vite
+*.local
+
+# editor
+.idea/
+.vscode/*
+!.vscode/extensions.json

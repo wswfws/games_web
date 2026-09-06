@@ -1,0 +1,28 @@
+{
+  "name": "games-web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "postinstall": "patch-package",
+    "dev": "npm run build:remotes && npm-run-all --parallel dev:shell preview:blackblast preview:build_cat",
+    "dev:shell": "npm run dev -w shell",
+    "dev:blackblast": "npm run dev -w blackblast",
+    "dev:build_cat": "npm run dev -w build_cat",
+    "build:remotes": "npm-run-all --serial build:blackblast build:build_cat",
+    "build:blackblast": "npm run build -w blackblast",
+    "build:build_cat": "npm run build -w build_cat",
+    "build:shell": "npm run build -w shell",
+    "preview:blackblast": "npm run preview -w blackblast",
+    "preview:build_cat": "npm run preview -w build_cat",
+    "build": "npm run build:remotes && npm run build:shell && node scripts/copy-remotes.js"
+  },
+  "workspaces": [
+    "shell",
+    "blackblast",
+    "build_cat"
+  ],
+  "devDependencies": {
+    "npm-run-all": "^4.1.5",
+    "patch-package": "^8.0.1"
+  }
+}

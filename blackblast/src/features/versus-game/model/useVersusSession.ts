@@ -7,7 +7,7 @@ import {
   type DragState,
   type TrayPiece,
 } from '@/entities/piece';
-import { AI_TUNING, suggestAiMove } from '@/features/ai-move';
+import { AI_TUNING, suggestVersusMove } from '@/features/ai-move';
 import { commitVersusMove, type VersusSide } from '../lib/moves';
 import type { FloatMsg } from '@/features/game-session';
 
@@ -113,7 +113,15 @@ export function useVersusSession(): VersusSession {
     const timer = window.setTimeout(() => {
       setState((st) => {
         if (st.done || st.turn !== 'bot') return st;
-        const suggestion = suggestAiMove(st.board, st.botTray, AI_TUNING.versusDepth, AI_TUNING, st.botStreak);
+        const suggestion = suggestVersusMove(
+          st.board,
+          st.botTray,
+          st.humanTray,
+          AI_TUNING.versusDepth,
+          AI_TUNING,
+          st.botStreak,
+          st.humanStreak,
+        );
         if (!suggestion) {
           const passes = st.passes + 1;
           const done = passes >= 2;
