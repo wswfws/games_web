@@ -14,7 +14,7 @@
     "build:shell": "npm run build -w shell",
     "preview:blackblast": "npm run preview -w blackblast",
     "preview:build_cat": "npm run preview -w build_cat",
-    "build": "node scripts/patch-federation.mjs && npm run build:remotes && npm run build:shell && node scripts/copy-remotes.js"
+    "build": "node -v && node scripts/patch-federation.mjs && npm run build:remotes && npm run build:shell && node scripts/copy-remotes.js"
   },
   "workspaces": [
     "shell",
