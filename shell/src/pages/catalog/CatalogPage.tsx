@@ -14,7 +14,7 @@ export function CatalogPage() {
 
       <section className="catalog-grid">
         {GAMES.map((game) => (
-          <Link key={game.id} to={game.route} className="catalog-card">
+          <Link key={game.id} to={game.route} className="catalog-card" aria-label={`Играть в ${game.title}`}>
             <span className="catalog-card-icon" style={{ background: `${game.accent}22`, color: game.accent }}>
               {game.icon}
             </span>

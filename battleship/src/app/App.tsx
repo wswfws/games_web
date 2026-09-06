@@ -282,7 +282,7 @@ export default function App() {
 
     setTurn('bot');
     setMessage('Мимо. Ходит бот…');
-    botTurn(next);
+    botTurn(playerBoard);
   }
 
   function botTurn(currentPlayerBoard: Cell[][]) {
@@ -388,7 +388,7 @@ export default function App() {
               <div className="bs-row" key={`p-row-${r}`}>
                 {row.map((cell, c) => {
                   const cls = ['bs-cell'];
-                  if (cell === 'ship' && phase === 'place') cls.push('bs-cell--ship');
+                  if (cell === 'ship') cls.push('bs-cell--ship');
                   if (cell === 'hit') cls.push('bs-cell--hit');
                   if (cell === 'miss') cls.push('bs-cell--miss');
                   const hover = preview ? prospectiveCells(preview.r, preview.c) : null;
