@@ -8,7 +8,7 @@
     "dev:shell": "npm run dev -w shell",
     "dev:blackblast": "npm run dev -w blackblast",
     "dev:build_cat": "npm run dev -w build_cat",
-    "build:remotes": "npm-run-all --serial build:blackblast build:build_cat",
+    "build:remotes": "npm run build:blackblast && npm run build:build_cat",
     "build:blackblast": "npm run build -w blackblast",
     "build:build_cat": "npm run build -w build_cat",
     "build:shell": "npm run build -w shell",
