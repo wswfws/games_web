@@ -95,7 +95,7 @@ function applyStrike(
   c: number,
   ships: Ship[],
 ): { board: Cell[][]; newSunk: boolean } {
-  if (board[r][c] !== 'water') return { board, newSunk: false };
+  if (board[r][c] === 'hit' || board[r][c] === 'miss') return { board, newSunk: false };
   const next = board.map((row) => [...row]);
   const isShip = shipCellsSet(ships).has(`${r},${c}`);
   next[r][c] = isShip ? 'hit' : 'miss';
@@ -126,7 +126,8 @@ function botMove(
 ): { r: number; c: number } | null {
   const hitSet = shipCellsSet(playerShips);
   const openCell = (r: number, c: number): boolean =>
-    r >= 0 && r < N && c >= 0 && c < N && playerBoard[r][c] === 'water';
+    r >= 0 && r < N && c >= 0 && c < N &&
+    playerBoard[r][c] !== 'hit' && playerBoard[r][c] !== 'miss';
 
   // Target mode: continue around the last hit.
   if (lastHit) {
@@ -260,7 +261,7 @@ export default function App() {
 
   function onPlayerStrike(r: number, c: number) {
     if (phase !== 'battle' || turn !== 'player' || over || busy) return;
-    if (enemyBoard[r][c] !== 'water') return;
+    if (enemyBoard[r][c] === 'hit' || enemyBoard[r][c] === 'miss') return;
 
     const { board: next, newSunk } = applyStrike(enemyBoard, r, c, enemyShips);
     setEnemyBoard(next);
