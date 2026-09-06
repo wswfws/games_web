@@ -6,7 +6,10 @@ export function CatalogPage() {
     <main className="catalog">
       <section className="catalog-hero">
         <h1 className="catalog-title">Мини-игры</h1>
-        <p className="catalog-subtitle">Шесть игр в одном приложении. Выбери и играй.</p>
+        <p className="catalog-subtitle">
+          {GAMES.length} {GAMES.length === 1 ? 'игра' : GAMES.length < 5 ? 'игры' : 'игр'} в одном приложении.
+          Выбери и играй.
+        </p>
       </section>
 
       <section className="catalog-grid">

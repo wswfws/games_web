@@ -385,7 +385,7 @@ export default function App() {
           >
             <div className="bs-board-title bs-board-title--mine">Твои корабли</div>
             {playerBoard.map((row, r) => (
-              <div className="bs-row" key={r}>
+              <div className="bs-row" key={`p-row-${r}`}>
                 {row.map((cell, c) => {
                   const cls = ['bs-cell'];
                   if (cell === 'ship' && phase === 'place') cls.push('bs-cell--ship');
@@ -396,7 +396,7 @@ export default function App() {
                   if (previewing) cls.push(hover.valid ? 'bs-cell--preview' : 'bs-cell--preview-invalid');
                   return (
                     <button
-                      key={c}
+                      key={`p-cell-${r}-${c}`}
                       className={cls.join(' ')}
                       onClick={() => phase === 'place' && placeShip(r, c)}
                       onMouseEnter={() => phase === 'place' && setPreview({ r, c })}
@@ -412,14 +412,14 @@ export default function App() {
         <div className="bs-board">
           <div className="bs-board-title bs-board-title--enemy">Корабли бота</div>
           {enemyBoard.map((row, r) => (
-            <div className="bs-row" key={r}>
+            <div className="bs-row" key={`e-row-${r}`}>
               {row.map((cell, c) => {
                 const cls = ['bs-cell'];
                 if (cell === 'hit') cls.push('bs-cell--hit');
                 if (cell === 'miss') cls.push('bs-cell--miss');
                 return (
                   <button
-                    key={c}
+                    key={`e-cell-${r}-${c}`}
                     className={cls.join(' ')}
                     onClick={() => onPlayerStrike(r, c)}
                     disabled={phase !== 'battle' || turn !== 'player' || over || busy}
