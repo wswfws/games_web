@@ -17,6 +17,9 @@ export interface CatalogGame extends GameMeta {
 
 const BlackblastApp = lazy(() => import('blackblast/App'));
 const BuildCatApp = lazy(() => import('build_cat/App'));
+const TicTacToeApp = lazy(() => import('tictactoe/App'));
+const ConnectFourApp = lazy(() => import('connect_four/App'));
+const MemoryApp = lazy(() => import('memory/App'));
 
 export const GAMES: CatalogGame[] = [
   {
@@ -42,5 +45,41 @@ export const GAMES: CatalogGame[] = [
     route: '/games/factory-grid',
     remoteModule: 'build_cat/App',
     Remote: BuildCatApp,
+  },
+  {
+    id: 'tic-tac-toe',
+    title: 'Крестики-нолики',
+    tagline: 'Логика',
+    description:
+      'Классические крестики-нолики 3×3 против бота: побеждай, блокируй соперника и держи счёт партий.',
+    icon: '⭕',
+    accent: '#4cc2ff',
+    route: '/games/tic-tac-toe',
+    remoteModule: 'tictactoe/App',
+    Remote: TicTacToeApp,
+  },
+  {
+    id: 'connect-four',
+    title: '4 в ряд',
+    tagline: 'Стратегия',
+    description:
+      'Бросай фишки в колонки и собери четыре в ряд по горизонтали, вертикали или диагонали раньше бота.',
+    icon: '🔴',
+    accent: '#ff6ca8',
+    route: '/games/connect-four',
+    remoteModule: 'connect_four/App',
+    Remote: ConnectFourApp,
+  },
+  {
+    id: 'memory',
+    title: 'Найди пары',
+    tagline: 'Память',
+    description:
+      'Открывай карточки и собирай одинаковые эмодзи парами. Чем меньше ходов — тем лучше.',
+    icon: '🃏',
+    accent: '#34d399',
+    route: '/games/memory',
+    remoteModule: 'memory/App',
+    Remote: MemoryApp,
   },
 ];

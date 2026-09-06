@@ -4,10 +4,17 @@ import federation from '@originjs/vite-plugin-federation'
 
 const isDev = process.env.NODE_ENV !== 'production'
 
-function remoteEntryUrl(name) {
+const REMOTE_PORTS: Record<string, number> = {
+  blackblast: 4173,
+  build_cat: 4174,
+  tictactoe: 4175,
+  connect_four: 4176,
+  memory: 4177,
+}
+
+function remoteEntryUrl(name: string) {
   if (isDev) {
-    const port = name === 'blackblast' ? 4173 : 4174
-    return `http://localhost:${port}/assets/remoteEntry.js`
+    return `http://localhost:${REMOTE_PORTS[name]}/assets/remoteEntry.js`
   }
   return `/_remotes/${name}/assets/remoteEntry.js`
 }
@@ -21,6 +28,9 @@ export default defineConfig({
       remotes: {
         blackblast: remoteEntryUrl('blackblast'),
         build_cat: remoteEntryUrl('build_cat'),
+        tictactoe: remoteEntryUrl('tictactoe'),
+        connect_four: remoteEntryUrl('connect_four'),
+        memory: remoteEntryUrl('memory'),
       },
       shared: {
         react: { requiredVersion: '^19' },

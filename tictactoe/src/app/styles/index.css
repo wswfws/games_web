@@ -1,0 +1,115 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  background: #0b0e1a;
+  color: #e6e9f5;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.ttt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 24px 16px;
+  min-height: 100vh;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.ttt-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.ttt-header h1 {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: 0.4px;
+}
+
+.ttt-scores {
+  display: flex;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.ttt-score--x {
+  color: #4cc2ff;
+}
+
+.ttt-score--o {
+  color: #ff6ca8;
+}
+
+.ttt-status {
+  font-size: 15px;
+  color: #9aa3c0;
+  min-height: 20px;
+}
+
+.ttt-board {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(64px, 1fr));
+  gap: 8px;
+  width: 100%;
+  padding: 8px;
+  background: #141a30;
+  border-radius: 16px;
+}
+
+.ttt-cell {
+  aspect-ratio: 1;
+  border: none;
+  border-radius: 10px;
+  background: #1d2540;
+  color: transparent;
+  font-size: 34px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.ttt-cell:hover:not(:disabled) {
+  background: #26315a;
+}
+
+.ttt-cell--x {
+  color: #4cc2ff;
+}
+
+.ttt-cell--o {
+  color: #ff6ca8;
+}
+
+.ttt-cell:disabled {
+  cursor: default;
+}
+
+.ttt-restart {
+  border: none;
+  padding: 10px 28px;
+  border-radius: 999px;
+  background: #6c63ff;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.ttt-restart:hover {
+  transform: scale(1.04);
+}
