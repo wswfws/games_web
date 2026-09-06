@@ -19,6 +19,20 @@ function randInt(max: number): number {
   return Math.floor(Math.random() * max);
 }
 
+/** Cells of a ship of `size` starting at (r, c) and extending right/down. */
+function shipCells(
+  r: number,
+  c: number,
+  size: number,
+  orientation: 'h' | 'v',
+): Array<{ r: number; c: number }> {
+  const cells: Array<{ r: number; c: number }> = [];
+  for (let i = 0; i < size; i++) {
+    cells.push(orientation === 'h' ? { r, c: c + i } : { r: r + i, c });
+  }
+  return cells;
+}
+
 /** Generate a placement of all ships that don't touch (incl. diagonals). */
 function generateRandomShips(): Ship[] {
   const board = makeBoard();
@@ -166,28 +180,43 @@ export default function App() {
   const [lastHit, setLastHit] = useState<{ r: number; c: number } | null>(null);
   const [message, setMessage] = useState('Расставь корабли и нажми «В бой»');
   const [orientation, setOrientation] = useState<'h' | 'v'>('h');
+  const [preview, setPreview] = useState<{ r: number; c: number } | null>(null);
   const [scores, setScores] = useState({ player: 0, bot: 0 });
   const [busy, setBusy] = useState(false);
 
-  function placeShip(r: number, c: number) {
-    if (phase !== 'place' || placing >= SHIP_SIZES.length) return;
+  /** Cells a ship would occupy starting at (r, c); null when nothing to place. */
+  function prospectiveCells(
+    r: number,
+    c: number,
+  ): { cells: Array<{ r: number; c: number }>; valid: boolean } | null {
+    if (phase !== 'place') return null;
     const size = SHIP_SIZES[placing];
-    const rows = orientation === 'v' ? size : 1;
-    const cols = orientation === 'h' ? size : 1;
-    if (r + rows > N || c + cols > N) return;
-
-    const cells: Array<{ r: number; c: number }> = [];
-    for (let i = 0; i < size; i++) {
-      cells.push(orientation === 'h' ? { r, c: c + i } : { r: r + i, c });
-    }
+    if (size === undefined) return null;
+    const raw = shipCells(r, c, size, orientation);
+    const cells = raw.filter((cell) => cell.r < N && cell.c < N);
+    const outOfBounds = cells.length !== raw.length;
     const collision = cells.some((cell) => playerBoard[cell.r][cell.c] !== 'water');
-    if (collision) return;
+    return { cells, valid: !outOfBounds && !collision };
+  }
 
+  function placeShip(r: number, c: number) {
+    const prospective = prospectiveCells(r, c);
+    if (!prospective || !prospective.valid) return;
     const next = playerBoard.map((row) => [...row]);
-    for (const cell of cells) next[cell.r][cell.c] = 'ship';
+    for (const cell of prospective.cells) next[cell.r][cell.c] = 'ship';
     setPlayerBoard(next);
-    setPlayerShips((prev) => [...prev, { cells }]);
+    setPlayerShips((prev) => [...prev, { cells: prospective.cells }]);
     setPlacing(placing + 1);
+  }
+
+  function undoPlace() {
+    if (phase !== 'place' || placing === 0) return;
+    const removed = playerShips[playerShips.length - 1];
+    const next = playerBoard.map((row) => [...row]);
+    for (const cell of removed.cells) next[cell.r][cell.c] = 'water';
+    setPlayerBoard(next);
+    setPlayerShips(playerShips.slice(0, -1));
+    setPlacing(placing - 1);
   }
 
   function randomPlace() {
@@ -213,6 +242,7 @@ export default function App() {
     setLastHit(null);
     setMessage('Расставь корабли и нажми «В бой»');
     setBusy(false);
+    setPreview(null);
   }
 
   function startBattle() {
@@ -310,7 +340,7 @@ export default function App() {
             {placing < SHIP_SIZES.length ? (
               <>
                 Ставишь корабль на <strong>{SHIP_SIZES[placing]}</strong> клетки (
-                {SHIP_SIZES.length - placing} осталось)
+                {SHIP_SIZES.length - placing} осталось). Зелёная подсветка — можно ставить, красная — нельзя.
               </>
             ) : (
               <>Все корабли расставлены.</>
@@ -321,8 +351,12 @@ export default function App() {
               className="bs-btn"
               onClick={() => setOrientation((o) => (o === 'h' ? 'v' : 'h'))}
               disabled={placing >= SHIP_SIZES.length}
+              title="Или нажми правой кнопкой мыши по полю"
             >
-              Повернуть: {orientation === 'h' ? 'горизонтально' : 'вертикально'}
+              Повернуть: {orientation === 'h' ? '⟶ вправо' : '⟱ вниз'}
+            </button>
+            <button className="bs-btn" onClick={undoPlace} disabled={placing === 0}>
+              Убрать последний
             </button>
             <button className="bs-btn" onClick={randomPlace}>
               Случайно
@@ -339,28 +373,41 @@ export default function App() {
       )}
 
       <div className="bs-boards">
-        <div className="bs-board">
-          <div className="bs-board-title bs-board-title--mine">Твои корабли</div>
-          {playerBoard.map((row, r) => (
-            <div className="bs-row" key={r}>
-              {row.map((cell, c) => {
-                const cls = ['bs-cell'];
-                if (cell === 'ship' && phase === 'place') cls.push('bs-cell--ship');
-                if (cell === 'hit') cls.push('bs-cell--hit');
-                if (cell === 'miss') cls.push('bs-cell--miss');
-                return (
-                  <button
-                    key={c}
-                    className={cls.join(' ')}
-                    onClick={() => phase === 'place' && placeShip(r, c)}
-                  >
-                    {cell === 'hit' ? '✕' : cell === 'miss' ? '·' : ''}
-                  </button>
-                );
-              })}
-            </div>
-          ))}
-        </div>
+        <div
+            className="bs-board"
+            onContextMenu={(e) => {
+              e.preventDefault();
+              if (phase === 'place' && placing < SHIP_SIZES.length) {
+                setOrientation((o) => (o === 'h' ? 'v' : 'h'));
+              }
+            }}
+            onMouseLeave={() => setPreview(null)}
+          >
+            <div className="bs-board-title bs-board-title--mine">Твои корабли</div>
+            {playerBoard.map((row, r) => (
+              <div className="bs-row" key={r}>
+                {row.map((cell, c) => {
+                  const cls = ['bs-cell'];
+                  if (cell === 'ship' && phase === 'place') cls.push('bs-cell--ship');
+                  if (cell === 'hit') cls.push('bs-cell--hit');
+                  if (cell === 'miss') cls.push('bs-cell--miss');
+                  const hover = preview ? prospectiveCells(preview.r, preview.c) : null;
+                  const previewing = hover && hover.cells.some((p) => p.r === r && p.c === c);
+                  if (previewing) cls.push(hover.valid ? 'bs-cell--preview' : 'bs-cell--preview-invalid');
+                  return (
+                    <button
+                      key={c}
+                      className={cls.join(' ')}
+                      onClick={() => phase === 'place' && placeShip(r, c)}
+                      onMouseEnter={() => phase === 'place' && setPreview({ r, c })}
+                    >
+                      {cell === 'hit' ? '✕' : cell === 'miss' ? '·' : ''}
+                    </button>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
 
         <div className="bs-board">
           <div className="bs-board-title bs-board-title--enemy">Корабли бота</div>

@@ -199,6 +199,16 @@ body {
   cursor: pointer;
 }
 
+.bs-cell--preview {
+  background: rgba(76, 194, 255, 0.35);
+  border-color: #4cc2ff;
+}
+
+.bs-cell--preview-invalid {
+  background: rgba(255, 107, 138, 0.35);
+  border-color: #ff6b8a;
+}
+
 .bs-cell--hit {
   background: #5a1d29;
   border-color: #a83a4e;
