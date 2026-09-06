@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import './styles/index.css';
 
 type Cell = 'R' | 'Y' | null;
@@ -18,7 +18,7 @@ function dropRow(board: Board, col: number): number {
   return -1;
 }
 
-function winnerOf(board: Board): Cell {
+function winnerPlayer(board: Board): Cell {
   const has = (r: number, c: number): Cell | null => board[r]?.[c] ?? null;
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
@@ -47,33 +47,91 @@ function winnerOf(board: Board): Cell {
   return null;
 }
 
-function dropped(board: Board, col: number, me: Cell): Board | null {
-  const r = dropRow(board, col);
-  if (r < 0) return null;
-  const next = board.map((row) => [...row]);
-  next[r][col] = me;
-  return next;
-}
-
 function isFull(board: Board): boolean {
   return board.every((row) => row.every(Boolean));
 }
 
-/** ИИ: победа → блок → ближе к центру → случайный столбец */
-function aiCol(board: Board): number {
-  const me: Cell = 'Y';
-  const you: Cell = 'R';
-  for (let c = 0; c < COLS; c++) {
-    const next = dropped(board, c, me);
-    if (next && winnerOf(next) === me) return c;
+function placed(board: Board, col: number, me: Cell): Board | null {
+  const r = dropRow(board, col);
+  if (r < 0) return null;
+  const next = board.map((row) => [...row]) as Board;
+  next[r][col] = me;
+  return next;
+}
+
+/**
+ * Бот — адаптация https://github.com/wswfws/four-in-row
+ * minimax с глубиной 3, эвристическая оценка угроз по 4 направлениям.
+ */
+const BOT_DEPTH = 3;
+
+function evaluateThreat(count: number, empty: number): number {
+  if (count === 4) return 10000;
+  if (count === 3 && empty === 1) return 100;
+  if (count === 2 && empty === 2) return 10;
+  if (count === 1 && empty === 3) return 1;
+  return 0;
+}
+
+function aiScore(board: Board, botPlayer: Cell): number {
+  const me = botPlayer;
+  const you: Cell = botPlayer === 'R' ? 'Y' : 'R';
+
+  const evaluateLine = (cells: Cell[]): number => {
+    let meCount = 0;
+    let youCount = 0;
+    let emptyCount = 0;
+    for (const c of cells) {
+      if (c === me) meCount++;
+      else if (c === you) youCount++;
+      else emptyCount++;
+    }
+    if (meCount > 0 && youCount > 0) return 0;
+    if (meCount > 0) return evaluateThreat(meCount, emptyCount);
+    if (youCount > 0) return -evaluateThreat(youCount, emptyCount) * 1.1;
+    return 0;
+  };
+
+  let score = 0;
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      if (c <= COLS - 4) score += evaluateLine([board[r][c], board[r][c + 1], board[r][c + 2], board[r][c + 3]]);
+      if (r <= ROWS - 4) score += evaluateLine([board[r][c], board[r + 1][c], board[r + 2][c], board[r + 3][c]]);
+      if (c <= COLS - 4 && r <= ROWS - 4) score += evaluateLine([board[r][c], board[r + 1][c + 1], board[r + 2][c + 2], board[r + 3][c + 3]]);
+      if (c >= 3 && r <= ROWS - 4) score += evaluateLine([board[r][c], board[r + 1][c - 1], board[r + 2][c - 2], board[r + 3][c - 3]]);
+    }
   }
-  for (let c = 0; c < COLS; c++) {
-    const next = dropped(board, c, you);
-    if (next && winnerOf(next) === you) return c;
+  return score;
+}
+
+function aiNextCol(board: Board, botPlayer: Cell, depth: number): [number, number] {
+  let bestCol = 0;
+  let bestScore = -Infinity;
+
+  for (let col = 0; col < COLS; col++) {
+    const next = placed(board, col, botPlayer);
+    if (!next) continue;
+
+    const w = winnerPlayer(next);
+    if (w === botPlayer) {
+      return [col, 100000 - (BOT_DEPTH - depth)];
+    }
+
+    let score: number;
+    if (depth > 1) {
+      const [, rec] = aiNextCol(next, botPlayer === 'R' ? 'Y' : 'R', depth - 1);
+      score = -rec;
+    } else {
+      score = aiScore(next, botPlayer);
+    }
+
+    if (score > bestScore || (score === bestScore && Math.random() > 0.5)) {
+      bestCol = col;
+      bestScore = score;
+    }
   }
-  const ordered = [3, 2, 4, 1, 5, 0, 6];
-  const open = ordered.filter((c) => dropRow(board, c) >= 0);
-  return open.length ? open[0] : -1;
+
+  return [bestCol, bestScore];
 }
 
 export default function App() {
@@ -82,55 +140,60 @@ export default function App() {
   const [over, setOver] = useState(false);
   const [scores, setScores] = useState({ player: 0, ai: 0 });
 
-  const winner = winnerOf(board);
+  const boardRef = useRef(board);
+  const overRef = useRef(over);
+  boardRef.current = board;
+  overRef.current = over;
+
+  const winner = winnerPlayer(board);
+
+  const winnerLabel = useMemo(
+    () => (winner ? (winner === 'R' ? 'Ты победил!' : 'Победил бот!') : null),
+    [winner],
+  );
+
+  function commit(next: Board, who: 'player' | 'ai') {
+    if (overRef.current) return;
+    setBoard(next);
+    boardRef.current = next;
+    const w = winnerPlayer(next);
+    if (w) {
+      setOver(true);
+      overRef.current = true;
+      setScores((s) => ({ ...s, [who]: s[who] + 1 }));
+    } else if (isFull(next)) {
+      setOver(true);
+      overRef.current = true;
+    } else {
+      setTurn(who === 'player' ? 'ai' : 'player');
+    }
+  }
 
   function reset() {
     setBoard(emptyBoard());
     setTurn('player');
     setOver(false);
+    overRef.current = false;
   }
 
-  function play(col: number, who: 'player' | 'ai') {
-    const me: Cell = who === 'player' ? 'R' : 'Y';
-    setBoard((current) => {
-      const next = dropped(current, col, me);
-      if (!next || over) return current;
-      const w = winnerOf(next);
-      if (w) {
-        setOver(true);
-        setScores((s) => ({ ...s, [who]: s[who] + 1 }));
-      } else if (isFull(next)) {
-        setOver(true);
-      } else {
-        setTurn((t) => (t === 'player' ? 'ai' : 'player'));
-      }
-      return next;
-    });
+  function botWhenFree() {
+    setTimeout(() => {
+      if (overRef.current) return;
+      const current = boardRef.current;
+      if (winnerPlayer(current) || isFull(current)) return;
+      const [col] = aiNextCol(current, 'Y', BOT_DEPTH);
+      const afterBot = placed(current, col, 'Y');
+      if (afterBot) commit(afterBot, 'ai');
+    }, 320);
   }
 
   function onColClick(col: number) {
-    if (over || turn !== 'player' || dropRow(board, col) < 0) return;
-    play(col, 'player');
-    setTimeout(() => {
-      setOver((currentOver) => {
-        if (currentOver) return currentOver;
-        setBoard((current) => {
-          const next = dropped(current, aiCol(current), 'Y');
-          if (!next) return current;
-          const w = winnerOf(next);
-          if (w) {
-            setOver(true);
-            setScores((s) => ({ ...s, ai: s.ai + 1 }));
-          } else if (isFull(next)) {
-            setOver(true);
-          } else {
-            setTurn('player');
-          }
-          return next;
-        });
-        return currentOver;
-      });
-    }, 300);
+    if (overRef.current || turn !== 'player') return;
+    const afterPlayer = placed(boardRef.current, col, 'R');
+    if (!afterPlayer) return;
+    commit(afterPlayer, 'player');
+    if (winnerPlayer(afterPlayer) || isFull(afterPlayer)) return;
+    botWhenFree();
   }
 
   return (
@@ -146,9 +209,7 @@ export default function App() {
       <div className="cf-status">
         {over
           ? winner
-            ? winner === 'R'
-              ? 'Ты победил!'
-              : 'Победил бот!'
+            ? winnerLabel
             : 'Ничья!'
           : turn === 'player'
             ? 'Твой ход'
