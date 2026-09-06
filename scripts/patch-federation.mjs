@@ -21,14 +21,17 @@ function patch(content) {
   out = out.replace(/(\(`'` \+ DYNAMIC_LOADING_CSS_PREFIX\)\.length,)/, '(str[0] + DYNAMIC_LOADING_CSS_PREFIX).length,')
 
   // 3. Cleanup walk should also drop TemplateLiteral CSS markers (not just plain strings).
+  //    Consume the fully balanced marker expression (`_b2.value.indexOf(\`${...}\`) > -1)` so the
+  //    replacement keeps parens balanced: the original wrapper `((_b2 = ...) == null ? ... )` has
+  //    two opening parens that the tail `)) > -1)` matches; the replacement must not leave the tail.
   out = out.replace(
-    /var _a2, _b2;\n(\s*)if \(node && node\.type === "CallExpression" && typeof \(\(_a2 = node\.arguments\[0\]\) == null \? void 0 : _a2\.value\) === "string" && \(\(_b2 = node\.arguments\[0\]\) == null \? void 0 : _b2\.value\.indexOf\(/,
+    /var _a2, _b2;\n(\s*)if \(node && node\.type === "CallExpression" && typeof \(\(_a2 = node\.arguments\[0\]\) == null \? void 0 : _a2\.value\) === "string" && \(\(_b2 = node\.arguments\[0\]\) == null \? void 0 : _b2\.value\.indexOf\(\s*`\$\{DYNAMIC_LOADING_CSS_PREFIX\}`\s*\)\) > -1\) \{/,
     (_m, ws) =>
       'const _arg0 = node && node.arguments ? node.arguments[0] : void 0;\n' +
       ws +
       'const _argStr = _arg0 ? typeof _arg0.value === "string" ? _arg0.value : _arg0.quasis && _arg0.quasis[0] && _arg0.quasis[0].value && _arg0.quasis[0].value.raw : void 0;\n' +
       ws +
-      'if (node && node.type === "CallExpression" && typeof _argStr === "string" && _argStr.indexOf(',
+      'if (node && node.type === "CallExpression" && typeof _argStr === "string" && (_argStr.indexOf(`${DYNAMIC_LOADING_CSS_PREFIX}`) > -1)) {',
   )
 
   return out
