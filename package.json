@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "postinstall": "patch-package",
+    "postinstall": "node scripts/patch-federation.mjs",
     "dev": "npm run build:remotes && npm-run-all --parallel dev:shell preview:blackblast preview:build_cat",
     "dev:shell": "npm run dev -w shell",
     "dev:blackblast": "npm run dev -w blackblast",
@@ -14,7 +14,7 @@
     "build:shell": "npm run build -w shell",
     "preview:blackblast": "npm run preview -w blackblast",
     "preview:build_cat": "npm run preview -w build_cat",
-    "build": "npm run build:remotes && npm run build:shell && node scripts/copy-remotes.js"
+    "build": "node scripts/patch-federation.mjs && npm run build:remotes && npm run build:shell && node scripts/copy-remotes.js"
   },
   "workspaces": [
     "shell",
@@ -23,8 +23,5 @@
   ],
   "devDependencies": {
     "npm-run-all": "^4.1.5"
-  },
-  "dependencies": {
-    "patch-package": "^8.0.1"
   }
 }
